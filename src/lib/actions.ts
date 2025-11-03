@@ -10,6 +10,7 @@ import {
 import { db } from '@/firebase/config';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import type { MenuItem, Promotion } from './types';
 
 export const updateDriverStatus = (
   driverId: string,
@@ -37,7 +38,7 @@ export const deleteMenuItem = (itemId: string) => {
   });
 };
 
-export const addMenuItem = (item: any) => {
+export const addMenuItem = (item: Omit<MenuItem, 'id'>) => {
   const collectionRef = collection(db, 'menuItems');
   addDoc(collectionRef, item).catch(async (serverError) => {
     const permissionError = new FirestorePermissionError({
@@ -49,7 +50,7 @@ export const addMenuItem = (item: any) => {
   });
 };
 
-export const updateMenuItem = (itemId: string, item: any) => {
+export const updateMenuItem = (itemId: string, item: Partial<MenuItem>) => {
   const itemRef = doc(db, 'menuItems', itemId);
   updateDoc(itemRef, item).catch(async (serverError) => {
     const permissionError = new FirestorePermissionError({
@@ -72,7 +73,7 @@ export const deletePromotion = (promoId: string) => {
   });
 };
 
-export const addPromotion = (promo: any) => {
+export const addPromotion = (promo: Omit<Promotion, 'id'>) => {
     const collectionRef = collection(db, 'promotions');
     addDoc(collectionRef, promo).catch(async (serverError) => {
         const permissionError = new FirestorePermissionError({
@@ -84,7 +85,7 @@ export const addPromotion = (promo: any) => {
     });
 };
 
-export const updatePromotion = (promoId: string, promo: any) => {
+export const updatePromotion = (promoId: string, promo: Partial<Promotion>) => {
     const promoRef = doc(db, 'promotions', promoId);
     updateDoc(promoRef, promo).catch(async (serverError) => {
         const permissionError = new FirestorePermissionError({

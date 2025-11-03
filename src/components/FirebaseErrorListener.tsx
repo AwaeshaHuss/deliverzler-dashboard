@@ -15,9 +15,12 @@ export default function FirebaseErrorListener() {
         variant: 'destructive',
         title: 'Permission Denied',
         description: error.message,
+        duration: 9000,
       });
       // This will also trigger the Next.js error overlay in development
-      throw error;
+      if (process.env.NODE_ENV === 'development') {
+        throw error;
+      }
     };
 
     errorEmitter.on('permission-error', handlePermissionError);
