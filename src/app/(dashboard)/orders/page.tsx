@@ -105,7 +105,7 @@ export default function OrdersPage() {
             {orders?.map((order) => (
               <TableRow key={order.id}>
                 <TableCell className="font-medium">{order.id}</TableCell>
-                <TableCell>{order.customer.name}</TableCell>
+                <TableCell>{order.customer?.name ?? 'N/A'}</TableCell>
                 <TableCell>
                   <Badge variant={getStatusBadgeVariant(order.status)}>
                     {order.status}
