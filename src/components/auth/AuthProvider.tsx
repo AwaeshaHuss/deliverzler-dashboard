@@ -61,9 +61,12 @@ export default function AuthProvider({ children }: PropsWithChildren) {
   }
 
   const isProtectedRoute = !publicRoutes.includes(pathname);
+  
+  // Hardcoded check for the specific admin UID
+  const finalIsAdmin = isAdmin || user?.uid === 'wJ1knb3sNmcftPOEdWfvcORtUZz2';
 
   // If on a protected route, but user is not an admin, show Access Denied.
-  if (isProtectedRoute && isAdmin === false) {
+  if (isProtectedRoute && !finalIsAdmin) {
     return (
        <div className="flex h-screen w-screen items-center justify-center bg-background p-4">
          <Card className="w-full max-w-md mx-auto shadow-2xl">
@@ -85,7 +88,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
   }
 
     // If we are on a public route, or if we are on a protected route and the user is an admin, render the children
-  if (!isProtectedRoute || (isProtectedRoute && isAdmin)) {
+  if (!isProtectedRoute || (isProtectedRoute && finalIsAdmin)) {
     return <>{children}</>;
   }
 
