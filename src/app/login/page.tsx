@@ -1,3 +1,10 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Shield } from 'lucide-react';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -8,10 +15,34 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Shield } from 'lucide-react';
-import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
+import { app } from '@/firebase/firebase';
 
 export default function LoginPage() {
+  const [email, setEmail] = useState('admin@example.com');
+  const [password, setPassword] = useState('password');
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
+  const auth = getAuth(app);
+
+  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push('/dashboard');
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Authentication Failed',
+        description: error.message,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <Card className="w-full max-w-sm mx-auto shadow-2xl">
@@ -29,7 +60,7 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="grid gap-4">
+          <form className="grid gap-4" onSubmit={handleSignIn}>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -37,7 +68,9 @@ export default function LoginPage() {
                 type="email"
                 placeholder="admin@example.com"
                 required
-                defaultValue="admin@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
               />
             </div>
             <div className="grid gap-2">
@@ -46,14 +79,14 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 required
-                defaultValue="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
               />
             </div>
-            <Link href="/dashboard" className="mt-2">
-              <Button type="submit" className="w-full">
-                Sign In
-              </Button>
-            </Link>
+            <Button type="submit" className="w-full mt-2" disabled={isLoading}>
+              {isLoading ? 'Signing In...' : 'Sign In'}
+            </Button>
           </form>
         </CardContent>
       </Card>
