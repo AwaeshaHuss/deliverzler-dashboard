@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -71,6 +72,19 @@
       },
       "required": ["name", "category", "price", "imageUrl", "description"]
     },
+     "MenuCategory": {
+      "title": "Menu Category",
+      "description": "A category on the restaurant menu.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "dataAiHint": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["name", "imageUrl", "description"]
+    },
     "Promotion": {
       "title": "Promotion",
       "description": "A promotional offer.",
@@ -117,6 +131,10 @@
     "/menuItems/{menuItemId}": {
       "schema": { "$ref": "#/entities/MenuItem" },
       "description": "Stores menu items."
+    },
+     "/menu_categories/{categoryId}": {
+      "schema": { "$ref": "#/entities/MenuCategory" },
+      "description": "Stores menu categories."
     },
     "/promotions/{promotionId}": {
       "schema": { "$ref": "#/entities/Promotion" },

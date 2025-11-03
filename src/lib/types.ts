@@ -1,3 +1,4 @@
+
 export type User = {
   id: string;
   name: string;
@@ -57,6 +58,14 @@ export type MenuItem = {
   description: string;
   options: { name: string; price: number }[];
   addons: { name: string; price: number }[];
+};
+
+export type MenuCategory = {
+    id: string;
+    name: string;
+    description: string;
+    imageUrl: string;
+    dataAiHint: string;
 };
 
 export type Promotion = {

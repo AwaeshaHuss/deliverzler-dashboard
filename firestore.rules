@@ -1,3 +1,4 @@
+
 rules_version = '2';
 
 service cloud.firestore {
@@ -14,17 +15,8 @@ service cloud.firestore {
 
     // USERS
     match /users/{userId} {
-      // Admins can read and update user status
-      allow read, update: if isAdmin();
-      
-      // Allow users to create their own profile, but only admins can modify critical fields.
-      allow create: if request.auth != null
-                    && request.auth.uid == userId
-                    && request.resource.data.email == request.auth.token.email
-                    && request.resource.data.name is string
-                    && request.resource.data.status == 'Active'
-                    // Ensure non-admin fields are not set on creation
-                    && !("admin" in request.resource.data);
+      // Admins can manage users
+      allow read, create, update, delete: if isAdmin();
     }
 
     // DRIVERS
@@ -50,6 +42,14 @@ service cloud.firestore {
                                       && request.resource.data.price > 0
                                       && request.resource.data.category is string
                                       && request.resource.data.imageUrl is string;
+    }
+
+    // MENU CATEGORIES
+    match /menu_categories/{categoryId} {
+        // Any authenticated user can read categories
+        allow read: if request.auth != null;
+        // Only admins can manage categories
+        allow create, update, delete: if isAdmin();
     }
 
     // PROMOTIONS

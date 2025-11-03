@@ -1,3 +1,4 @@
+
 'use client';
 import {
   doc,
@@ -9,7 +10,7 @@ import {
 import { db } from '@/firebase/config';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import type { MenuItem, Promotion, User, Driver } from './types';
+import type { MenuItem, Promotion, User, Driver, MenuCategory } from './types';
 
 export const updateDriverStatus = (
   driverId: string,
@@ -60,6 +61,44 @@ export const updateMenuItem = (itemId: string, item: Partial<MenuItem>) => {
       path: itemRef.path,
       operation: 'update',
       requestResourceData: item,
+    });
+    errorEmitter.emit('permission-error', permissionError);
+    throw permissionError;
+  });
+};
+
+export const deleteMenuCategory = (categoryId: string) => {
+  const categoryRef = doc(db, 'menu_categories', categoryId);
+  return deleteDoc(categoryRef).catch(async (serverError) => {
+    const permissionError = new FirestorePermissionError({
+      path: categoryRef.path,
+      operation: 'delete',
+    });
+    errorEmitter.emit('permission-error', permissionError);
+    throw permissionError;
+  });
+};
+
+export const addMenuCategory = (category: Omit<MenuCategory, 'id'>) => {
+  const collectionRef = collection(db, 'menu_categories');
+  return addDoc(collectionRef, category).catch(async (serverError) => {
+    const permissionError = new FirestorePermissionError({
+      path: collectionRef.path,
+      operation: 'create',
+      requestResourceData: category,
+    });
+    errorEmitter.emit('permission-error', permissionError);
+    throw permissionError;
+  });
+};
+
+export const updateMenuCategory = (categoryId: string, category: Partial<MenuCategory>) => {
+  const categoryRef = doc(db, 'menu_categories', categoryId);
+  return updateDoc(categoryRef, category).catch(async (serverError) => {
+    const permissionError = new FirestorePermissionError({
+      path: categoryRef.path,
+      operation: 'update',
+      requestResourceData: category,
     });
     errorEmitter.emit('permission-error', permissionError);
     throw permissionError;

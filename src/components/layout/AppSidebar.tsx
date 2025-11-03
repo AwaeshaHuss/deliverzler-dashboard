@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -11,6 +12,7 @@ import {
 } from '@/components/ui/sidebar';
 import {
   Bell,
+  Folder,
   Home,
   LogOut,
   Shield,
@@ -27,6 +29,7 @@ import { usePathname } from 'next/navigation';
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/menu', label: 'Menu', icon: Utensils },
+  { href: '/categories', label: 'Categories', icon: Folder },
   { href: '/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/users', label: 'Users', icon: Users },
   { href: '/drivers', label: 'Drivers', icon: Truck },
