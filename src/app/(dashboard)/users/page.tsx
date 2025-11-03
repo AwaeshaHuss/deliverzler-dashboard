@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, PlusCircle } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +27,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -43,7 +44,15 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCollection } from '@/firebase';
-import { updateUserStatus } from '@/lib/actions';
+import { updateUserStatus, deleteUser } from '@/lib/actions';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import UserForm from '@/components/forms/UserForm';
 
 export default function UsersPage() {
   const { data: users, isLoading } = useCollection<User>('users');
@@ -54,6 +63,8 @@ export default function UsersPage() {
     reason: string;
   } | null>(null);
   const [isModerating, setIsModerating] = useState(false);
+  const [isSheetOpen, setSheetOpen] = useState(false);
+  const [isDeleteAlertOpen, setDeleteAlertOpen] = useState(false);
   const { toast } = useToast();
 
   const handleModerateClick = (user: User) => {
@@ -61,9 +72,36 @@ export default function UsersPage() {
     setModerationResult(null);
     setIsModerationOpen(true);
   };
+  
+  const handleEditClick = (user: User) => {
+    setSelectedUser(user);
+    setSheetOpen(true);
+  };
+
+  const handleAddClick = () => {
+    setSelectedUser(null);
+    setSheetOpen(true);
+  };
+
+  const handleDeleteClick = (user: User) => {
+    setSelectedUser(user);
+    setDeleteAlertOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (selectedUser) {
+      await deleteUser(selectedUser.id);
+      toast({
+        title: 'User Deleted',
+        description: `${selectedUser.name} has been removed.`,
+      });
+      setDeleteAlertOpen(false);
+      setSelectedUser(null);
+    }
+  };
 
   const handleCheckBehavior = async () => {
-    if (!selectedUser) return;
+    if (!selectedUser?.activitySummary) return;
     setIsModerating(true);
     try {
       const result = await moderateUserBehavior({
@@ -91,7 +129,7 @@ export default function UsersPage() {
         description: `${selectedUser.name} has been blocked.`,
       });
     } catch (error) {
-       // Error is handled by the global listener
+      // Error is handled by the global listener
     } finally {
       setIsModerationOpen(false);
     }
@@ -127,10 +165,18 @@ export default function UsersPage() {
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Users</CardTitle>
-          <CardDescription>
-            View and manage all registered users.
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="font-headline">Users</CardTitle>
+              <CardDescription>
+                View and manage all registered users.
+              </CardDescription>
+            </div>
+            <Button size="sm" className="gap-1" onClick={handleAddClick}>
+              <PlusCircle className="h-4 w-4" />
+              Add User
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -164,7 +210,9 @@ export default function UsersPage() {
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
                     <Badge
-                      variant={user.status === 'Blocked' ? 'destructive' : 'secondary'}
+                      variant={
+                        user.status === 'Blocked' ? 'destructive' : 'secondary'
+                      }
                     >
                       {user.status}
                     </Badge>
@@ -183,11 +231,20 @@ export default function UsersPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEditClick(user)}>
+                          Edit
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleModerateClick(user)}
                         >
                           Moderate
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => handleDeleteClick(user)}
+                        >
+                          Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -198,6 +255,20 @@ export default function UsersPage() {
           </Table>
         </CardContent>
       </Card>
+      
+      <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>{selectedUser ? 'Edit' : 'Add'} User</SheetTitle>
+            <SheetDescription>
+              {selectedUser
+                ? 'Update the details for this user.'
+                : 'Enter the details for the new user.'}
+            </SheetDescription>
+          </SheetHeader>
+          <UserForm user={selectedUser} onSuccess={() => setSheetOpen(false)} />
+        </SheetContent>
+      </Sheet>
 
       <AlertDialog open={isModerationOpen} onOpenChange={setIsModerationOpen}>
         <AlertDialogContent>
@@ -213,7 +284,7 @@ export default function UsersPage() {
           <div className="space-y-4 text-sm">
             <p className="font-medium">User Activity Summary:</p>
             <p className="p-3 bg-muted rounded-md border text-muted-foreground">
-              {selectedUser?.activitySummary}
+              {selectedUser?.activitySummary || 'No activity summary available.'}
             </p>
             {isModerating ? (
               <div className="space-y-2">
@@ -247,7 +318,7 @@ export default function UsersPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             {!moderationResult && (
-              <Button onClick={handleCheckBehavior} disabled={isModerating}>
+              <Button onClick={handleCheckBehavior} disabled={isModerating || !selectedUser?.activitySummary}>
                 {isModerating && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
@@ -261,6 +332,26 @@ export default function UsersPage() {
                 </Button>
               </AlertDialogAction>
             )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={isDeleteAlertOpen} onOpenChange={setDeleteAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              user "{selectedUser?.name}".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button variant="destructive" onClick={handleDeleteConfirm}>
+                Delete
+              </Button>
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

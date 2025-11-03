@@ -1,6 +1,6 @@
 'use client';
 
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, PlusCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -30,21 +31,69 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCollection } from '@/firebase';
 import type { Driver } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { updateDriverStatus } from '@/lib/actions';
+import { updateDriverStatus, deleteDriver } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import DriverForm from '@/components/forms/DriverForm';
 
 export default function DriversPage() {
   const { data: drivers, isLoading } = useCollection<Driver>('drivers');
   const { toast } = useToast();
+  const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
+  const [isSheetOpen, setSheetOpen] = useState(false);
+  const [isDeleteAlertOpen, setDeleteAlertOpen] = useState(false);
 
   const allDrivers = drivers || [];
   const pendingDrivers = allDrivers.filter((d) => d.status === 'Pending');
+
+  const handleAddClick = () => {
+    setSelectedDriver(null);
+    setSheetOpen(true);
+  };
+
+  const handleEditClick = (driver: Driver) => {
+    setSelectedDriver(driver);
+    setSheetOpen(true);
+  };
+
+  const handleDeleteClick = (driver: Driver) => {
+    setSelectedDriver(driver);
+    setDeleteAlertOpen(true);
+  };
+  
+  const handleDeleteConfirm = async () => {
+    if (selectedDriver) {
+      await deleteDriver(selectedDriver.id);
+      toast({
+        title: 'Driver Deleted',
+        description: `${selectedDriver.name} has been removed.`,
+      });
+      setDeleteAlertOpen(false);
+      setSelectedDriver(null);
+    }
+  };
 
   const handleUpdateStatus = async (
     driverId: string,
     status: 'Approved' | 'Rejected'
   ) => {
-    // No try-catch needed, error is handled by the global error listener
     await updateDriverStatus(driverId, status);
     toast({
       title: 'Driver Status Updated',
@@ -156,6 +205,9 @@ export default function DriversPage() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => handleEditClick(driver)}>
+                      Edit
+                    </DropdownMenuItem>
                     {driver.status === 'Pending' && (
                       <>
                         <DropdownMenuItem
@@ -175,7 +227,13 @@ export default function DriversPage() {
                         </DropdownMenuItem>
                       </>
                     )}
-                    <DropdownMenuItem>View Details</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-destructive"
+                      onClick={() => handleDeleteClick(driver)}
+                    >
+                      Delete
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>
@@ -187,46 +245,91 @@ export default function DriversPage() {
   };
 
   return (
-    <Tabs defaultValue="all">
-      <div className="flex items-center">
-        <TabsList>
-          <TabsTrigger value="all">All Drivers</TabsTrigger>
-          <TabsTrigger value="applications">
-            Applications
-            {pendingDrivers.length > 0 && (
-              <Badge className="ml-2 bg-primary text-primary-foreground">
-                {pendingDrivers.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-        </TabsList>
-      </div>
-      <TabsContent value="all">
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-headline">All Drivers</CardTitle>
-            <CardDescription>
-              Monitor and manage all drivers on the platform.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DriverTable driverList={allDrivers} />
-          </CardContent>
-        </Card>
-      </TabsContent>
-      <TabsContent value="applications">
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-headline">Driver Applications</CardTitle>
-            <CardDescription>
-              Review and approve new driver applications.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DriverTable driverList={pendingDrivers} />
-          </CardContent>
-        </Card>
-      </TabsContent>
-    </Tabs>
+    <>
+      <Tabs defaultValue="all">
+        <div className="flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="all">All Drivers</TabsTrigger>
+            <TabsTrigger value="applications">
+              Applications
+              {pendingDrivers.length > 0 && (
+                <Badge className="ml-2 bg-primary text-primary-foreground">
+                  {pendingDrivers.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+          <Button size="sm" className="gap-1" onClick={handleAddClick}>
+            <PlusCircle className="h-4 w-4" />
+            Add Driver
+          </Button>
+        </div>
+        <TabsContent value="all">
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-headline">All Drivers</CardTitle>
+              <CardDescription>
+                Monitor and manage all drivers on the platform.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DriverTable driverList={allDrivers} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="applications">
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-headline">Driver Applications</CardTitle>
+              <CardDescription>
+                Review and approve new driver applications.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DriverTable driverList={pendingDrivers} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+      <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>{selectedDriver ? 'Edit' : 'Add'} Driver</SheetTitle>
+            <SheetDescription>
+              {selectedDriver
+                ? 'Update the details for this driver.'
+                : 'Enter the details for the new driver.'}
+            </SheetDescription>
+          </SheetHeader>
+          <DriverForm
+            driver={selectedDriver}
+            onSuccess={() => setSheetOpen(false)}
+          />
+        </SheetContent>
+      </Sheet>
+
+      <AlertDialog
+        open={isDeleteAlertOpen}
+        onOpenChange={setDeleteAlertOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              driver "{selectedDriver?.name}".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button variant="destructive" onClick={handleDeleteConfirm}>
+                Delete
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
