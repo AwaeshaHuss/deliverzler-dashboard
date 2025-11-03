@@ -66,7 +66,7 @@ export default function MenuItemForm({ menuItem, onSuccess }: MenuItemFormProps)
 
   const onSubmit = async (data: MenuItemFormValues) => {
     try {
-      if (isEditing) {
+      if (isEditing && menuItem) {
         await updateMenuItem(menuItem.id, data);
         toast({ title: 'Success', description: 'Menu item updated.' });
       } else {
@@ -75,7 +75,7 @@ export default function MenuItemForm({ menuItem, onSuccess }: MenuItemFormProps)
       }
       onSuccess?.();
     } catch (error) {
-      // Error is handled by the global listener, no need to toast here
+      // The global error handler will display the toast.
     }
   };
 

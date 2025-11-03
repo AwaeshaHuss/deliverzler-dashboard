@@ -5,7 +5,6 @@ import {
   deleteDoc,
   collection,
   addDoc,
-  type Firestore,
 } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -24,76 +23,84 @@ export const updateDriverStatus = (
       requestResourceData: { status },
     });
     errorEmitter.emit('permission-error', permissionError);
+    // Re-throw to be caught by component if needed, but handled globally
+    throw permissionError;
   });
 };
 
 export const deleteMenuItem = (itemId: string) => {
   const itemRef = doc(db, 'menuItems', itemId);
-  deleteDoc(itemRef).catch(async (serverError) => {
+  return deleteDoc(itemRef).catch(async (serverError) => {
     const permissionError = new FirestorePermissionError({
       path: itemRef.path,
       operation: 'delete',
     });
     errorEmitter.emit('permission-error', permissionError);
+    throw permissionError;
   });
 };
 
 export const addMenuItem = (item: Omit<MenuItem, 'id'>) => {
   const collectionRef = collection(db, 'menuItems');
-  addDoc(collectionRef, item).catch(async (serverError) => {
+  return addDoc(collectionRef, item).catch(async (serverError) => {
     const permissionError = new FirestorePermissionError({
       path: collectionRef.path,
       operation: 'create',
       requestResourceData: item,
     });
     errorEmitter.emit('permission-error', permissionError);
+    throw permissionError;
   });
 };
 
 export const updateMenuItem = (itemId: string, item: Partial<MenuItem>) => {
   const itemRef = doc(db, 'menuItems', itemId);
-  updateDoc(itemRef, item).catch(async (serverError) => {
+  return updateDoc(itemRef, item).catch(async (serverError) => {
     const permissionError = new FirestorePermissionError({
       path: itemRef.path,
       operation: 'update',
       requestResourceData: item,
     });
     errorEmitter.emit('permission-error', permissionError);
+    throw permissionError;
   });
 };
 
 export const deletePromotion = (promoId: string) => {
   const promoRef = doc(db, 'promotions', promoId);
-  deleteDoc(promoRef).catch(async (serverError) => {
+  return deleteDoc(promoRef).catch(async (serverError) => {
     const permissionError = new FirestorePermissionError({
       path: promoRef.path,
       operation: 'delete',
     });
     errorEmitter.emit('permission-error', permissionError);
+    throw permissionError;
   });
 };
 
 export const addPromotion = (promo: Omit<Promotion, 'id'>) => {
     const collectionRef = collection(db, 'promotions');
-    addDoc(collectionRef, promo).catch(async (serverError) => {
+    return addDoc(collectionRef, promo).catch(async (serverError) => {
         const permissionError = new FirestorePermissionError({
             path: collectionRef.path,
             operation: 'create',
             requestResourceData: promo,
         });
         errorEmitter.emit('permission-error', permissionError);
+        throw permissionError;
     });
 };
 
 export const updatePromotion = (promoId: string, promo: Partial<Promotion>) => {
     const promoRef = doc(db, 'promotions', promoId);
-    updateDoc(promoRef, promo).catch(async (serverError) => {
+    return updateDoc(promoRef, promo).catch(async (serverError) => {
         const permissionError = new FirestorePermissionError({
             path: promoRef.path,
             operation: 'update',
             requestResourceData: promo,
         });
         errorEmitter.emit('permission-error', permissionError);
+        throw permissionError;
     });
 };
 
@@ -106,6 +113,7 @@ export const hideReview = (reviewId: string) => {
       operation: 'delete',
     });
     errorEmitter.emit('permission-error', permissionError);
+    throw permissionError;
   });
 };
 
@@ -121,5 +129,6 @@ export const updateUserStatus = (
       requestResourceData: { status },
     });
     errorEmitter.emit('permission-error', permissionError);
+    throw permissionError;
   });
 };

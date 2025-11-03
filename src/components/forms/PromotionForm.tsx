@@ -64,7 +64,7 @@ export default function PromotionForm({ promotion, onSuccess }: PromotionFormPro
 
   const onSubmit = async (data: PromotionFormValues) => {
     try {
-      if (isEditing) {
+      if (isEditing && promotion) {
         await updatePromotion(promotion.id, data);
         toast({ title: 'Success', description: 'Promotion updated.' });
       } else {

@@ -73,18 +73,13 @@ export default function PromotionsPage() {
 
   const handleDeleteConfirm = async () => {
     if (selectedPromo) {
-      try {
-        await deletePromotion(selectedPromo.id);
-        toast({
-          title: 'Promotion Deleted',
-          description: `Promo code ${selectedPromo.code} has been deleted.`,
-        });
-      } catch (error) {
-        // Error is handled by the global listener
-      } finally {
-        setDeleteAlertOpen(false);
-        setSelectedPromo(null);
-      }
+      await deletePromotion(selectedPromo.id);
+      toast({
+        title: 'Promotion Deleted',
+        description: `Promo code ${selectedPromo.code} has been deleted.`,
+      });
+      setDeleteAlertOpen(false);
+      setSelectedPromo(null);
     }
   };
 

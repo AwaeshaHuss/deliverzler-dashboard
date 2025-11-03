@@ -14,15 +14,17 @@ service cloud.firestore {
 
     // USERS
     match /users/{userId} {
-      // Admins can read, update, and delete user profiles
-      allow read, update, delete: if isAdmin();
+      // Admins can read and update user status
+      allow read, update: if isAdmin();
       
-      // Users can create their own profile upon signup
+      // Allow users to create their own profile, but only admins can modify critical fields.
       allow create: if request.auth != null
                     && request.auth.uid == userId
                     && request.resource.data.email == request.auth.token.email
                     && request.resource.data.name is string
-                    && request.resource.data.status == 'Active';
+                    && request.resource.data.status == 'Active'
+                    // Ensure non-admin fields are not set on creation
+                    && !("admin" in request.resource.data);
     }
 
     // DRIVERS
@@ -42,7 +44,12 @@ service cloud.firestore {
       // Any authenticated user (including admins) can read the menu
       allow read: if request.auth != null;
       // Only admins can create, update, or delete menu items
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isAdmin()
+                                      && request.resource.data.name is string
+                                      && request.resource.data.price is number
+                                      && request.resource.data.price > 0
+                                      && request.resource.data.category is string
+                                      && request.resource.data.imageUrl is string;
     }
 
     // PROMOTIONS
@@ -50,7 +57,12 @@ service cloud.firestore {
       // Any authenticated user can read promotions
       allow read: if request.auth != null;
       // Only admins can manage promotions
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isAdmin()
+                                      && request.resource.data.code is string
+                                      && request.resource.data.discount is string
+                                      && request.resource.data.status in ['Active', 'Expired']
+                                      && request.resource.data.startDate is string
+                                      && request.resource.data.endDate is string;
     }
     
     // REVIEWS

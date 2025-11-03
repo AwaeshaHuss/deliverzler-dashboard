@@ -76,18 +76,13 @@ export default function MenuPage() {
 
   const handleDeleteConfirm = async () => {
     if (selectedItem) {
-      try {
-        await deleteMenuItem(selectedItem.id);
-        toast({
-          title: 'Menu Item Deleted',
-          description: `${selectedItem.name} has been removed.`,
-        });
-      } catch (error) {
-        // Error is handled by the global error listener
-      } finally {
-        setDeleteAlertOpen(false);
-        setSelectedItem(null);
-      }
+      await deleteMenuItem(selectedItem.id);
+      toast({
+        title: 'Menu Item Deleted',
+        description: `${selectedItem.name} has been removed.`,
+      });
+      setDeleteAlertOpen(false);
+      setSelectedItem(null);
     }
   };
 
