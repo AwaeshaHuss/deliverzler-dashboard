@@ -1,3 +1,4 @@
+'use client';
 import { orders } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
@@ -36,11 +37,11 @@ export default function RecentOrders() {
           </div>
         ))}
       </div>
-      <Link href="/orders" legacyBehavior>
-        <Button className="w-full" variant="outline">
+      <Button asChild className="w-full" variant="outline">
+        <Link href="/orders">
           View All Orders <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      </Link>
+        </Link>
+      </Button>
     </div>
   );
 }
