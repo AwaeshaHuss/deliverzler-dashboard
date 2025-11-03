@@ -25,7 +25,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   description: z.string().min(10, 'Description must be at least 10 characters.'),
-  imageUrl: z.string().url('Must be a valid URL.'),
+  imageUrl: z.string().url('Must be a valid URL.').or(z.literal('')),
   dataAiHint: z.string().optional(),
 });
 
@@ -50,8 +50,8 @@ export default function MenuCategoryForm({ category, onSuccess }: MenuCategoryFo
     : {
         name: '',
         description: '',
-        imageUrl: PlaceHolderImages.find(img => img.id === 'user-avatar-1')?.imageUrl || '',
-        dataAiHint: PlaceHolderImages.find(img => img.id === 'user-avatar-1')?.imageHint || '',
+        imageUrl: PlaceHolderImages.find(img => img.id === 'menu-item-1')?.imageUrl || '',
+        dataAiHint: PlaceHolderImages.find(img => img.id === 'menu-item-1')?.imageHint || '',
       };
 
   const form = useForm<MenuCategoryFormValues>({
