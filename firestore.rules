@@ -14,8 +14,10 @@ service cloud.firestore {
 
     // USERS
     match /users/{userId} {
+      // Admins can read, update, and delete user profiles
       allow read, update, delete: if isAdmin();
-      // Allow user creation on signup, but only with valid data and matching UID
+      
+      // Users can create their own profile upon signup
       allow create: if request.auth != null
                     && request.auth.uid == userId
                     && request.resource.data.email == request.auth.token.email
@@ -25,31 +27,40 @@ service cloud.firestore {
 
     // DRIVERS
     match /drivers/{driverId} {
-      allow read, create, update, delete: if isAdmin();
+        // Admins can manage driver profiles
+        allow read, create, update, delete: if isAdmin();
     }
 
     // ORDERS
     match /orders/{orderId} {
+      // Admins can manage all orders
       allow read, create, update, delete: if isAdmin();
     }
     
     // MENU ITEMS
     match /menuItems/{menuItemId} {
-      allow read: if request.auth != null; // Allow any authenticated user to read the menu
+      // Any authenticated user (including admins) can read the menu
+      allow read: if request.auth != null;
+      // Only admins can create, update, or delete menu items
       allow create, update, delete: if isAdmin();
     }
 
     // PROMOTIONS
     match /promotions/{promotionId} {
-      allow read: if request.auth != null; // Allow any authenticated user to read promotions
+      // Any authenticated user can read promotions
+      allow read: if request.auth != null;
+      // Only admins can manage promotions
       allow create, update, delete: if isAdmin();
     }
     
     // REVIEWS
     match /reviews/{reviewId} {
+      // Any authenticated user can read reviews
       allow read: if request.auth != null;
-      allow create: if request.auth != null; // Allow authenticated users to create reviews
-      allow delete: if isAdmin(); // Only admins can delete (hide) reviews
+      // Authenticated users can create reviews
+      allow create: if request.auth != null;
+      // Only admins can delete (hide) reviews
+      allow delete: if isAdmin();
     }
   }
 }
