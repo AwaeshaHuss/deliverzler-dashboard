@@ -4,6 +4,7 @@ import AppSidebar from '@/components/layout/AppSidebar';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import AuthProvider from '@/components/auth/AuthProvider';
+import FirebaseErrorListener from '@/components/FirebaseErrorListener';
 
 export default function DashboardLayout({ children }: PropsWithChildren) {
   return (
@@ -19,6 +20,7 @@ export default function DashboardLayout({ children }: PropsWithChildren) {
           </SidebarInset>
         </SidebarProvider>
       </AuthProvider>
+      <FirebaseErrorListener />
     </FirebaseClientProvider>
   );
 }
