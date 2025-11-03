@@ -34,22 +34,41 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { useCollection } from '@/firebase';
 import type { Promotion } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { deletePromotion } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
+import PromotionForm from '@/components/forms/PromotionForm';
 
 export default function PromotionsPage() {
   const { data: promotions, isLoading } = useCollection<Promotion>('promotions');
   const { toast } = useToast();
   const [isDeleteAlertOpen, setDeleteAlertOpen] = useState(false);
+  const [isSheetOpen, setSheetOpen] = useState(false);
   const [selectedPromo, setSelectedPromo] = useState<Promotion | null>(null);
 
   const handleDeleteClick = (promo: Promotion) => {
     setSelectedPromo(promo);
     setDeleteAlertOpen(true);
+  };
+  
+  const handleEditClick = (promo: Promotion) => {
+    setSelectedPromo(promo);
+    setSheetOpen(true);
+  };
+  
+  const handleAddClick = () => {
+    setSelectedPromo(null);
+    setSheetOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
@@ -61,11 +80,7 @@ export default function PromotionsPage() {
           description: `Promo code ${selectedPromo.code} has been deleted.`,
         });
       } catch (error) {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to delete promotion.',
-        });
+        // Error is handled by the global listener
       } finally {
         setDeleteAlertOpen(false);
         setSelectedPromo(null);
@@ -107,7 +122,7 @@ export default function PromotionsPage() {
                 Manage promo codes and special offers.
               </CardDescription>
             </div>
-            <Button size="sm" className="gap-1">
+            <Button size="sm" className="gap-1" onClick={handleAddClick}>
               <PlusCircle className="h-4 w-4" />
               Add Promotion
             </Button>
@@ -159,8 +174,7 @@ export default function PromotionsPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                        <DropdownMenuItem>Deactivate</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEditClick(promo)}>Edit</DropdownMenuItem>
                         <DropdownMenuItem
                           className="text-destructive"
                           onClick={() => handleDeleteClick(promo)}
@@ -176,6 +190,22 @@ export default function PromotionsPage() {
           </Table>
         </CardContent>
       </Card>
+      
+       <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>{selectedPromo ? 'Edit' : 'Add'} Promotion</SheetTitle>
+            <SheetDescription>
+              {selectedPromo ? 'Update the details for this promotion.' : 'Enter the details for the new promotion.'}
+            </SheetDescription>
+          </SheetHeader>
+          <PromotionForm
+            promotion={selectedPromo}
+            onSuccess={() => setSheetOpen(false)}
+          />
+        </SheetContent>
+      </Sheet>
+
       <AlertDialog
         open={isDeleteAlertOpen}
         onOpenChange={setDeleteAlertOpen}

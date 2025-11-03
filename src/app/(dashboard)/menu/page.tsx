@@ -43,16 +43,35 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { deleteMenuItem } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet';
+import MenuItemForm from '@/components/forms/MenuItemForm';
 
 export default function MenuPage() {
   const { data: menuItems, isLoading } = useCollection<MenuItem>('menuItems');
   const { toast } = useToast();
   const [isDeleteAlertOpen, setDeleteAlertOpen] = useState(false);
+  const [isSheetOpen, setSheetOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
 
   const handleDeleteClick = (item: MenuItem) => {
     setSelectedItem(item);
     setDeleteAlertOpen(true);
+  };
+
+  const handleEditClick = (item: MenuItem) => {
+    setSelectedItem(item);
+    setSheetOpen(true);
+  };
+  
+  const handleAddClick = () => {
+    setSelectedItem(null);
+    setSheetOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
@@ -64,11 +83,7 @@ export default function MenuPage() {
           description: `${selectedItem.name} has been removed.`,
         });
       } catch (error) {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to delete menu item.',
-        });
+        // Error is handled by the global error listener
       } finally {
         setDeleteAlertOpen(false);
         setSelectedItem(null);
@@ -111,7 +126,7 @@ export default function MenuPage() {
                 Manage your restaurant's menu items and categories.
               </CardDescription>
             </div>
-            <Button size="sm" className="gap-1">
+            <Button size="sm" className="gap-1" onClick={handleAddClick}>
               <PlusCircle className="h-4 w-4" />
               Add Item
             </Button>
@@ -166,7 +181,7 @@ export default function MenuPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEditClick(item)}>Edit</DropdownMenuItem>
                         <DropdownMenuItem
                           className="text-destructive"
                           onClick={() => handleDeleteClick(item)}
@@ -188,6 +203,22 @@ export default function MenuPage() {
           </div>
         </CardFooter>
       </Card>
+      
+      <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>{selectedItem ? 'Edit' : 'Add'} Menu Item</SheetTitle>
+            <SheetDescription>
+             {selectedItem ? 'Update the details for this menu item.' : 'Enter the details for the new menu item.'}
+            </SheetDescription>
+          </SheetHeader>
+          <MenuItemForm
+            menuItem={selectedItem}
+            onSuccess={() => setSheetOpen(false)}
+          />
+        </SheetContent>
+      </Sheet>
+
       <AlertDialog
         open={isDeleteAlertOpen}
         onOpenChange={setDeleteAlertOpen}
