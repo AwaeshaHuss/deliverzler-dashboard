@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shield } from 'lucide-react';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword, type Auth } from 'firebase/auth';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -22,12 +22,19 @@ export default function LoginPage() {
   const [email, setEmail] = useState('admin@deliverzler.com');
   const [password, setPassword] = useState('admin_123');
   const [isLoading, setIsLoading] = useState(false);
+  const [auth, setAuth] = useState<Auth | null>(null);
   const router = useRouter();
   const { toast } = useToast();
-  const auth = getAuth(app);
+
+  useEffect(() => {
+    setAuth(getAuth(app));
+  }, []);
+
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!auth) return;
+
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
@@ -85,7 +92,7 @@ export default function LoginPage() {
                 disabled={isLoading}
               />
             </div>
-            <Button type="submit" className="w-full mt-2" disabled={isLoading}>
+            <Button type="submit" className="w-full mt-2" disabled={isLoading || !auth}>
               {isLoading ? 'Signing In...' : 'Sign In'}
             </Button>
           </form>
