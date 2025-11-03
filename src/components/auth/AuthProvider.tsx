@@ -44,9 +44,11 @@ export default function AuthProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setIsLoading(true);
       setUser(user);
       if (user) {
-        await checkAdminClaim(user);
+        // When user logs in, check their claims. Force a refresh to get the latest claims.
+        await checkAdminClaim(user, true);
       } else {
         setIsAdmin(null);
       }
@@ -68,33 +70,6 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     }
   }, [user, isLoading, pathname, router]);
 
-
-  // This effect handles the "Access Denied" case specifically.
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout | undefined;
-
-    // If we're on a private route, the user is logged in, but not yet detected as an admin
-    if (!isLoading && user && isAdmin === false && !publicRoutes.includes(pathname)) {
-        // We'll retry fetching the token every 3 seconds to check for the claim.
-        intervalId = setInterval(async () => {
-            console.log('Retrying admin check...');
-            const hasClaim = await checkAdminClaim(user, true); // Force refresh
-            if (hasClaim) {
-                // If the claim is found, clear the interval. The user will be let in on the next re-render.
-                clearInterval(intervalId);
-            }
-        }, 3000);
-    }
-    
-    // Cleanup function to clear the interval when the component unmounts or dependencies change.
-    return () => {
-        if (intervalId) {
-            clearInterval(intervalId);
-        }
-    };
-  }, [isLoading, user, isAdmin, pathname, checkAdminClaim]);
-
-
   if (isLoading || (!user && !publicRoutes.includes(pathname))) {
     return (
       <div className="flex h-screen w-screen items-center justify-center">
@@ -115,8 +90,8 @@ export default function AuthProvider({ children }: PropsWithChildren) {
       </div>
     );
   }
-
-  if (user && isAdmin === false && !publicRoutes.includes(pathname)) {
+  
+  if (user && !publicRoutes.includes(pathname) && isAdmin === false) {
     return (
        <div className="flex h-screen w-screen items-center justify-center bg-background p-4">
          <Card className="w-full max-w-md mx-auto shadow-2xl">
@@ -126,7 +101,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
            </CardHeader>
            <CardContent>
             <p className="text-sm text-muted-foreground">
-              Please contact your system administrator to request access. If you were just granted access, this screen will update automatically.
+              Please contact your system administrator to request access. This may also occur if your admin privileges were just granted. Please try logging out and back in.
             </p>
            </CardContent>
            <CardFooter>
@@ -137,8 +112,8 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     )
   }
 
-    if (user && isAdmin === null && !publicRoutes.includes(pathname)) {
-    // Still checking claims
+  // This state is when the user is logged in, but we haven't confirmed their admin status yet
+  if (user && !publicRoutes.includes(pathname) && isAdmin === null) {
      return (
       <div className="flex h-screen w-screen items-center justify-center">
         <div className="w-full max-w-sm space-y-4 p-4">
@@ -147,7 +122,6 @@ export default function AuthProvider({ children }: PropsWithChildren) {
       </div>
     );
   }
-
 
   return <>{children}</>;
 }

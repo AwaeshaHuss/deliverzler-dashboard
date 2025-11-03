@@ -30,16 +30,14 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      console.log(`Attempting to sign in with email: ${email}`);
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/dashboard');
     } catch (error: any) {
-      console.error('Firebase SignIn Error Code:', error.code);
-      console.error('Firebase SignIn Error Message:', error.message);
+      console.error('Firebase SignIn Error:', error);
       toast({
         variant: 'destructive',
         title: 'Authentication Failed',
-        description: `Error: ${error.message} (Code: ${error.code})`,
+        description: 'Please check your email and password.',
       });
     } finally {
       setIsLoading(false);
