@@ -1,0 +1,15 @@
+{
+  "hosting": {
+    "headers": [
+      {
+        "source": "/.well-known/ai-plugin.json",
+        "headers": [
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          }
+        ]
+      }
+    ]
+  }
+}
