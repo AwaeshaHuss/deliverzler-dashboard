@@ -27,8 +27,16 @@ import {
 } from '@/components/ui/table';
 import { useCollection } from '@/firebase';
 import type { Order } from '@/lib/types';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
+
+// Helper to convert Firestore Timestamp to JS Date
+const toDate = (date: any): Date | null => {
+  if (!date) return null;
+  if (date.toDate) return date.toDate(); // Firestore Timestamp
+  if (typeof date === 'string') return new Date(date);
+  return date;
+};
 
 export default function OrdersPage() {
   const { data: orders, isLoading } = useCollection<Order>('orders');
@@ -115,7 +123,7 @@ export default function OrdersPage() {
                   {order.driver?.name ?? 'Unassigned'}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {format(parseISO(order.date), 'PPpp')}
+                  {order.date ? format(toDate(order.date)!, 'PPpp') : 'N/A'}
                 </TableCell>
                 <TableCell className="text-right">
                   ${order.total.toFixed(2)}
