@@ -54,7 +54,21 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     return () => unsubscribe();
   }, []);
 
-  const isProtectedRoute = !publicRoutes.includes(pathname);
+  useEffect(() => {
+    if (isLoading) return; // Don't do anything while loading
+
+    const isProtectedRoute = !publicRoutes.includes(pathname);
+
+    // If no user and trying to access a protected route, redirect to login.
+    if (!user && isProtectedRoute) {
+      router.push('/login');
+    }
+
+    // If user is logged in and tries to access a public route (login page), redirect to dashboard.
+    if (user && !isProtectedRoute) {
+      router.push('/dashboard');
+    }
+  }, [isLoading, user, pathname, router]);
 
   // While loading, show a skeleton screen.
   if (isLoading) {
@@ -78,18 +92,8 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     );
   }
 
-  // If no user and trying to access a protected route, redirect to login.
-  if (!user && isProtectedRoute) {
-    router.push('/login');
-    return null; // Don't render children while redirecting
-  }
+  const isProtectedRoute = !publicRoutes.includes(pathname);
 
-  // If user is logged in and tries to access a public route (login page), redirect to dashboard.
-  if (user && !isProtectedRoute) {
-    router.push('/dashboard');
-    return null; // Don't render children while redirecting
-  }
-  
   // If on a protected route, but user is not an admin, show Access Denied.
   if (isProtectedRoute && isAdmin === false) {
     return (
@@ -113,7 +117,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
   }
 
   // If on a protected route and we're still checking admin status, show a brief loading state.
-  if (isProtectedRoute && isAdmin === null) {
+  if (isProtectedRoute && user && isAdmin === null) {
      return (
       <div className="flex h-screen w-screen items-center justify-center">
         <div className="w-full max-w-sm space-y-4 p-4">
@@ -123,6 +127,11 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     );
   }
 
-  // If none of the above conditions are met, render the children.
-  return <>{children}</>;
+  // If we are on a public route, or if we are on a protected route and the user is an admin, render the children
+  if (!isProtectedRoute || (isProtectedRoute && isAdmin)) {
+    return <>{children}</>;
+  }
+  
+  // Fallback for any other state (e.g. redirecting)
+  return null;
 }
