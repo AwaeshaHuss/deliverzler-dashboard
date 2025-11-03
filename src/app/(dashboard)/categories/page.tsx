@@ -145,15 +145,19 @@ export default function CategoriesPage() {
               {categories?.map((category) => (
                 <TableRow key={category.id}>
                   <TableCell className="hidden sm:table-cell">
-                    {category.imageUrl && category.imageUrl !== '' && (
-                        <Image
+                    {category.imageUrl && category.imageUrl !== '' ? (
+                      <Image
                         alt={category.name}
                         className="aspect-square rounded-md object-cover"
                         height="64"
                         src={category.imageUrl}
                         width="64"
                         data-ai-hint={category.dataAiHint}
-                        />
+                      />
+                    ) : (
+                      <div className="w-16 h-16 bg-muted rounded-md flex items-center justify-center">
+                        <span className="text-xs text-muted-foreground">No Image</span>
+                      </div>
                     )}
                   </TableCell>
                   <TableCell className="font-medium">{category.name}</TableCell>

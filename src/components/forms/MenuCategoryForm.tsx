@@ -50,8 +50,8 @@ export default function MenuCategoryForm({ category, onSuccess }: MenuCategoryFo
     : {
         name: '',
         description: '',
-        imageUrl: PlaceHolderImages.find(p => p.id === 'menu-item-3')?.imageUrl ?? 'https://picsum.photos/seed/3/600/400',
-        dataAiHint: PlaceHolderImages.find(p => p.id === 'menu-item-3')?.imageHint ?? 'food category',
+        imageUrl: PlaceHolderImages.find(p => p.id === 'menu-item-2')?.imageUrl ?? 'https://picsum.photos/seed/2/600/400',
+        dataAiHint: PlaceHolderImages.find(p => p.id === 'menu-item-2')?.imageHint ?? 'food category',
       };
 
   const form = useForm<MenuCategoryFormValues>({
