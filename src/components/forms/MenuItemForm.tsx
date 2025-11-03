@@ -66,14 +66,21 @@ export default function MenuItemForm({ menuItem, onSuccess }: MenuItemFormProps)
 
   const onSubmit = async (data: MenuItemFormValues) => {
     try {
+      const itemData = {
+        ...data,
+        options: [], // Add default empty arrays
+        addons: [],  // Add default empty arrays
+      }
+
       if (isEditing && menuItem) {
-        await updateMenuItem(menuItem.id, data);
+        await updateMenuItem(menuItem.id, itemData);
         toast({ title: 'Success', description: 'Menu item updated.' });
       } else {
-        await addMenuItem(data);
+        await addMenuItem(itemData as Omit<MenuItem, 'id'>);
         toast({ title: 'Success', description: 'Menu item added.' });
       }
       onSuccess?.();
+      form.reset();
     } catch (error) {
       // The global error handler will display the toast.
     }

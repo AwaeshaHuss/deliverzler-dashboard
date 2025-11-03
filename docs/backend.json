@@ -63,12 +63,13 @@
         "name": { "type": "string" },
         "category": { "type": "string" },
         "price": { "type": "number" },
-        "imageUrl": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" },
         "dataAiHint": { "type": "string" },
         "description": { "type": "string" },
         "options": { "type": "array", "items": { "type": "object", "properties": { "name": { "type": "string" }, "price": { "type": "number" } } } },
         "addons": { "type": "array", "items": { "type": "object", "properties": { "name": { "type": "string" }, "price": { "type": "number" } } } }
-      }
+      },
+      "required": ["name", "category", "price", "imageUrl", "description"]
     },
     "Promotion": {
       "title": "Promotion",
