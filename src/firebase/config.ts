@@ -10,7 +10,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyD0ML2oJGXdSejsuouoGdKil9gvYx1e4NQ",
   authDomain: "deliverzler-restaurant.firebaseapp.com",
   projectId: "deliverzler-restaurant",
-  storageBucket: "deliverzler-restaurant.appspot.com",
+  storageBucket: "deliverzler-restaurant.firebasestorage.app",
   messagingSenderId: "557624783289",
   appId: "1:557624783289:web:ad4d2d11917978068a8668",
   measurementId: "G-TCZWFX0R22"
