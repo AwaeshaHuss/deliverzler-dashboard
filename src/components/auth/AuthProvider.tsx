@@ -26,29 +26,21 @@ export default function AuthProvider({ children }: PropsWithChildren) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const checkAdminClaim = useCallback(async (currentUser: User, forceRefresh: boolean = false) => {
-    try {
-      const tokenResult = await currentUser.getIdTokenResult(forceRefresh);
-      const claims = tokenResult.claims;
-      console.log('User claims:', claims);
-      const hasAdminClaim = !!claims.admin;
-      setIsAdmin(hasAdminClaim);
-      return hasAdminClaim;
-    } catch (error) {
-      console.error("Error getting user token:", error);
-      setIsAdmin(false);
-      return false;
-    }
-  }, []);
-
-
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setIsLoading(true);
-      setUser(user);
-      if (user) {
-        // When user logs in, check their claims. Force a refresh to get the latest claims.
-        await checkAdminClaim(user, true);
+      setUser(currentUser);
+      if (currentUser) {
+        try {
+          const tokenResult = await currentUser.getIdTokenResult(true); // Force refresh
+          const claims = tokenResult.claims;
+          console.log('User claims:', claims);
+          const hasAdminClaim = !!claims.admin;
+          setIsAdmin(hasAdminClaim);
+        } catch (error) {
+          console.error("Error getting user token:", error);
+          setIsAdmin(false);
+        }
       } else {
         setIsAdmin(null);
       }
@@ -56,7 +48,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     });
 
     return () => unsubscribe();
-  }, [checkAdminClaim]);
+  }, []);
 
   useEffect(() => {
     if (isLoading) return;
@@ -101,7 +93,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
            </CardHeader>
            <CardContent>
             <p className="text-sm text-muted-foreground">
-              Please contact your system administrator to request access. This may also occur if your admin privileges were just granted. Please try logging out and back in.
+              Please contact your system administrator to request access. If your admin privileges were just granted, please log out and sign back in.
             </p>
            </CardContent>
            <CardFooter>
