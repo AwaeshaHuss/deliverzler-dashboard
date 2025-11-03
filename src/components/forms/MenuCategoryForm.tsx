@@ -50,8 +50,8 @@ export default function MenuCategoryForm({ category, onSuccess }: MenuCategoryFo
     : {
         name: '',
         description: '',
-        imageUrl: PlaceHolderImages.find(img => img.id === 'menu-item-1')?.imageUrl || '',
-        dataAiHint: PlaceHolderImages.find(img => img.id === 'menu-item-1')?.imageHint || '',
+        imageUrl: PlaceHolderImages.find(img => img.id === 'user-avatar-1')?.imageUrl || '',
+        dataAiHint: PlaceHolderImages.find(img => img.id === 'user-avatar-1')?.imageHint || '',
       };
 
   const form = useForm<MenuCategoryFormValues>({
