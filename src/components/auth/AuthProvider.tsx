@@ -1,6 +1,6 @@
 'use client';
 
-import { PropsWithChildren, useEffect, useCallback, useState } from 'react';
+import { PropsWithChildren, useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
 import { app } from '@/firebase/firebase';
@@ -28,20 +28,19 @@ export default function AuthProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setIsLoading(true);
       setUser(currentUser);
       if (currentUser) {
+        // Force a token refresh to get the latest custom claims.
         try {
-          const tokenResult = await currentUser.getIdTokenResult(true); // Force refresh
-          const claims = tokenResult.claims;
-          console.log('User claims:', claims);
-          const hasAdminClaim = !!claims.admin;
+          const tokenResult = await currentUser.getIdTokenResult(true);
+          const hasAdminClaim = !!tokenResult.claims.admin;
           setIsAdmin(hasAdminClaim);
         } catch (error) {
-          console.error("Error getting user token:", error);
-          setIsAdmin(false);
+          console.error("Error refreshing user token:", error);
+          setIsAdmin(false); // Default to not admin on error
         }
       } else {
+        // No user, not an admin
         setIsAdmin(null);
       }
       setIsLoading(false);
@@ -50,19 +49,10 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (isLoading) return;
+  const isProtectedRoute = !publicRoutes.includes(pathname);
 
-    const isPublicRoute = publicRoutes.includes(pathname);
-
-    if (!user && !isPublicRoute) {
-      router.push('/login');
-    } else if (user && isPublicRoute) {
-      router.push('/dashboard');
-    }
-  }, [user, isLoading, pathname, router]);
-
-  if (isLoading || (!user && !publicRoutes.includes(pathname))) {
+  // While loading, show a skeleton screen.
+  if (isLoading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center">
         <div className="w-full max-w-sm space-y-4">
@@ -82,8 +72,21 @@ export default function AuthProvider({ children }: PropsWithChildren) {
       </div>
     );
   }
+
+  // If no user and trying to access a protected route, redirect to login.
+  if (!user && isProtectedRoute) {
+    router.push('/login');
+    return null; // Don't render children while redirecting
+  }
+
+  // If user is logged in and tries to access a public route (login page), redirect to dashboard.
+  if (user && !isProtectedRoute) {
+    router.push('/dashboard');
+    return null; // Don't render children while redirecting
+  }
   
-  if (user && !publicRoutes.includes(pathname) && isAdmin === false) {
+  // If on a protected route, but user is not an admin, show Access Denied.
+  if (isProtectedRoute && isAdmin === false) {
     return (
        <div className="flex h-screen w-screen items-center justify-center bg-background p-4">
          <Card className="w-full max-w-md mx-auto shadow-2xl">
@@ -101,11 +104,11 @@ export default function AuthProvider({ children }: PropsWithChildren) {
            </CardFooter>
          </Card>
        </div>
-    )
+    );
   }
 
-  // This state is when the user is logged in, but we haven't confirmed their admin status yet
-  if (user && !publicRoutes.includes(pathname) && isAdmin === null) {
+  // If on a protected route and we're still checking admin status, show a brief loading state.
+  if (isProtectedRoute && isAdmin === null) {
      return (
       <div className="flex h-screen w-screen items-center justify-center">
         <div className="w-full max-w-sm space-y-4 p-4">
@@ -115,5 +118,6 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     );
   }
 
+  // If none of the above conditions are met, render the children.
   return <>{children}</>;
 }
