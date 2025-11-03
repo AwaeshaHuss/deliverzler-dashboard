@@ -11,6 +11,7 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import * as admin from 'firebase-admin';
 
+// Initialize the app if it hasn't been initialized yet
 if (!admin.apps.length) {
   admin.initializeApp();
 }
