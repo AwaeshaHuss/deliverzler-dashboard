@@ -1,4 +1,6 @@
-import { MoreHorizontal, PlusCircle } from 'lucide-react';
+'use client';
+
+import { MoreHorizontal } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,13 +25,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { orders } from '@/lib/data';
+import { useCollection } from '@/firebase';
+import type { Order } from '@/lib/types';
 import { format, parseISO } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function OrdersPage() {
+  const { data: orders, isLoading } = useCollection<Order>('orders');
+
   const getStatusBadgeVariant = (
-    status: (typeof orders)[0]['status']
+    status: Order['status']
   ): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {
       case 'Delivered':
@@ -45,6 +50,31 @@ export default function OrdersPage() {
         return 'outline';
     }
   };
+  
+   if (isLoading) {
+    return (
+       <Card>
+        <CardHeader>
+          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-4 w-64" />
+        </CardHeader>
+        <CardContent>
+           <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center space-x-4 p-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-6 w-20" />
+                <Skeleton className="h-4 w-32 hidden md:block" />
+                <Skeleton className="h-4 w-48 hidden md:block" />
+                <Skeleton className="h-4 w-16 ml-auto" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card>
@@ -52,9 +82,7 @@ export default function OrdersPage() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="font-headline">Orders</CardTitle>
-            <CardDescription>
-              Manage all customer orders.
-            </CardDescription>
+            <CardDescription>Manage all customer orders.</CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -74,7 +102,7 @@ export default function OrdersPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders.map((order) => (
+            {orders?.map((order) => (
               <TableRow key={order.id}>
                 <TableCell className="font-medium">{order.id}</TableCell>
                 <TableCell>{order.customer.name}</TableCell>

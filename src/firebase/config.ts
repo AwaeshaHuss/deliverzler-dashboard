@@ -1,3 +1,7 @@
+
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+
 // To find your Firebase config object, go to the Firebase console, select
 // your project, and go to Project settings.
 //
@@ -10,10 +14,14 @@ const firebaseConfig = {
   apiKey: "AIzaSyD0ML2oJGXdSejsuouoGdKil9gvYx1e4NQ",
   authDomain: "deliverzler-restaurant.firebaseapp.com",
   projectId: "deliverzler-restaurant",
-  storageBucket: "deliverzler-restaurant.firebasestorage.app",
+  storageBucket: "deliverzler-restaurant.appspot.com",
   messagingSenderId: "557624783289",
   appId: "1:557624783289:web:ad4d2d11917978068a8668",
   measurementId: "G-TCZWFX0R22"
 };
 
-export {firebaseConfig};
+
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const db = getFirestore(app);
+
+export { db, firebaseConfig };

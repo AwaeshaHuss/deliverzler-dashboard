@@ -1,12 +1,32 @@
 'use client';
-import { orders } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { Button } from '../ui/button';
 import { ArrowRight } from 'lucide-react';
+import { useCollection } from '@/firebase';
+import type { Order } from '@/lib/types';
+import { Skeleton } from '../ui/skeleton';
 
 export default function RecentOrders() {
-  const recentOrders = orders.slice(0, 5);
+  const { data: orders, isLoading } = useCollection<Order>('orders');
+  const recentOrders = orders?.slice(0, 5) || [];
+
+  if (isLoading) {
+    return (
+       <div className="space-y-4">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="flex items-center gap-4">
+            <Skeleton className="h-9 w-9 rounded-full" />
+            <div className="space-y-2 flex-1">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-3 w-40" />
+            </div>
+            <Skeleton className="h-5 w-16" />
+          </div>
+        ))}
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -28,7 +48,8 @@ export default function RecentOrders() {
                 {order.customer.name}
               </p>
               <p className="text-sm text-muted-foreground">
-                {order.customer.name.toLowerCase().replace(' ', '.')}@example.com
+                {order.customer.name.toLowerCase().replace(' ', '.')}
+                @example.com
               </p>
             </div>
             <div className="ml-auto font-medium">

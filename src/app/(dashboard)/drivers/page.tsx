@@ -30,12 +30,34 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCollection } from '@/firebase';
 import type { Driver } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { updateDriverStatus } from '@/lib/actions';
+import { useToast } from '@/hooks/use-toast';
 
 export default function DriversPage() {
   const { data: drivers, isLoading } = useCollection<Driver>('drivers');
+  const { toast } = useToast();
 
   const allDrivers = drivers || [];
-  const pendingDrivers = allDrivers.filter(d => d.status === 'Pending');
+  const pendingDrivers = allDrivers.filter((d) => d.status === 'Pending');
+
+  const handleUpdateStatus = async (
+    driverId: string,
+    status: 'Approved' | 'Rejected'
+  ) => {
+    try {
+      await updateDriverStatus(driverId, status);
+      toast({
+        title: 'Driver Status Updated',
+        description: `Driver has been ${status.toLowerCase()}.`,
+      });
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to update driver status.',
+      });
+    }
+  };
 
   const getStatusBadgeVariant = (
     status: Driver['status']
@@ -63,10 +85,10 @@ export default function DriversPage() {
       case 'Busy':
         return 'bg-yellow-500/20 text-yellow-700 border-yellow-500/30';
     }
-  }
+  };
 
   const DriverTable = ({ driverList }: { driverList: Driver[] }) => {
-     if (isLoading) {
+    if (isLoading) {
       return (
         <div className="space-y-4">
           {[...Array(5)].map((_, i) => (
@@ -81,9 +103,9 @@ export default function DriversPage() {
         </div>
       );
     }
-    
+
     if (!driverList.length) {
-      return <p className='text-muted-foreground'>No drivers found.</p>
+      return <p className="text-muted-foreground">No drivers found.</p>;
     }
 
     return (
@@ -107,7 +129,11 @@ export default function DriversPage() {
             <TableRow key={driver.id}>
               <TableCell className="hidden sm:table-cell">
                 <Avatar>
-                  <AvatarImage src={driver.avatarUrl} alt={driver.name} data-ai-hint={driver.dataAiHint} />
+                  <AvatarImage
+                    src={driver.avatarUrl}
+                    alt={driver.name}
+                    data-ai-hint={driver.dataAiHint}
+                  />
                   <AvatarFallback>{driver.name.charAt(0)}</AvatarFallback>
                 </Avatar>
               </TableCell>
@@ -118,7 +144,12 @@ export default function DriversPage() {
                 </Badge>
               </TableCell>
               <TableCell>
-                <Badge variant="outline" className={getAvailabilityBadgeVariant(driver.availability)}>{driver.availability}</Badge>
+                <Badge
+                  variant="outline"
+                  className={getAvailabilityBadgeVariant(driver.availability)}
+                >
+                  {driver.availability}
+                </Badge>
               </TableCell>
               <TableCell className="hidden md:table-cell">
                 {driver.vehicle}
@@ -134,14 +165,24 @@ export default function DriversPage() {
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     {driver.status === 'Pending' && (
                       <>
-                        <DropdownMenuItem>Approve</DropdownMenuItem>
-                        <DropdownMenuItem className='text-destructive'>Reject</DropdownMenuItem>
-                        <DropdownMenuItem>View Application</DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleUpdateStatus(driver.id, 'Approved')
+                          }
+                        >
+                          Approve
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() =>
+                            handleUpdateStatus(driver.id, 'Rejected')
+                          }
+                        >
+                          Reject
+                        </DropdownMenuItem>
                       </>
                     )}
-                    {driver.status !== 'Pending' && (
-                       <DropdownMenuItem>View Details</DropdownMenuItem>
-                    )}
+                    <DropdownMenuItem>View Details</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>
@@ -149,7 +190,7 @@ export default function DriversPage() {
           ))}
         </TableBody>
       </Table>
-    )
+    );
   };
 
   return (
@@ -160,7 +201,9 @@ export default function DriversPage() {
           <TabsTrigger value="applications">
             Applications
             {pendingDrivers.length > 0 && (
-              <Badge className="ml-2 bg-primary text-primary-foreground">{pendingDrivers.length}</Badge>
+              <Badge className="ml-2 bg-primary text-primary-foreground">
+                {pendingDrivers.length}
+              </Badge>
             )}
           </TabsTrigger>
         </TabsList>

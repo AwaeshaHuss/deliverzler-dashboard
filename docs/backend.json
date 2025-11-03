@@ -38,6 +38,63 @@
         "availability": { "type": "string", "enum": ["Online", "Offline", "Busy"], "description": "The driver's current availability." }
       },
       "required": ["id", "name", "email", "status", "availability"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "An order placed by a customer.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customer": { "type": "object", "properties": { "name": { "type": "string" }, "avatarUrl": { "type": "string" }, "dataAiHint": { "type": "string" } } },
+        "driver": { "type": "object", "properties": { "name": { "type": "string" }, "avatarUrl": { "type": "string" }, "dataAiHint": { "type": "string" } } },
+        "items": { "type": "array", "items": { "type": "object", "properties": { "name": { "type": "string" }, "quantity": { "type": "number" } } } },
+        "status": { "type": "string", "enum": ["Pending", "Accepted", "Preparing", "On The Way", "Delivered", "Cancelled"] },
+        "total": { "type": "number" },
+        "date": { "type": "string", "format": "date-time" },
+        "deliveryAddress": { "type": "string" }
+      }
+    },
+    "MenuItem": {
+      "title": "Menu Item",
+      "description": "An item on the restaurant menu.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "price": { "type": "number" },
+        "imageUrl": { "type": "string" },
+        "dataAiHint": { "type": "string" },
+        "description": { "type": "string" },
+        "options": { "type": "array", "items": { "type": "object", "properties": { "name": { "type": "string" }, "price": { "type": "number" } } } },
+        "addons": { "type": "array", "items": { "type": "object", "properties": { "name": { "type": "string" }, "price": { "type": "number" } } } }
+      }
+    },
+    "Promotion": {
+      "title": "Promotion",
+      "description": "A promotional offer.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "description": { "type": "string" },
+        "discount": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "Expired"] },
+        "startDate": { "type": "string", "format": "date" },
+        "endDate": { "type": "string", "format": "date" }
+      }
+    },
+    "Review": {
+      "title": "Review",
+      "description": "A user review.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerName": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "date": { "type": "string", "format": "date" }
+      }
     }
   },
   "auth": {
@@ -51,6 +108,22 @@
     "/drivers/{driverId}": {
       "schema": { "$ref": "#/entities/Driver" },
       "description": "Stores driver profile and application information."
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Stores customer orders."
+    },
+    "/menuItems/{menuItemId}": {
+      "schema": { "$ref": "#/entities/MenuItem" },
+      "description": "Stores menu items."
+    },
+    "/promotions/{promotionId}": {
+      "schema": { "$ref": "#/entities/Promotion" },
+      "description": "Stores promotional offers."
+    },
+    "/reviews/{reviewId}": {
+      "schema": { "$ref": "#/entities/Review" },
+      "description": "Stores user reviews."
     }
   }
 }
