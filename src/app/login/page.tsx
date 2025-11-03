@@ -19,8 +19,8 @@ import { useToast } from '@/hooks/use-toast';
 import { app } from '@/firebase/firebase';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('admin@example.com');
-  const [password, setPassword] = useState('password');
+  const [email, setEmail] = useState('admin@deliverzler.com');
+  const [password, setPassword] = useState('admin_123');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
