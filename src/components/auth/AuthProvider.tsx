@@ -30,14 +30,19 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        // Force a token refresh to get the latest custom claims.
-        try {
-          const tokenResult = await currentUser.getIdTokenResult(true);
-          const hasAdminClaim = !!tokenResult.claims.admin;
-          setIsAdmin(hasAdminClaim);
-        } catch (error) {
-          console.error("Error refreshing user token:", error);
-          setIsAdmin(false); // Default to not admin on error
+        // Hardcoded check for the specific admin UID
+        if (currentUser.uid === 'wJ1knb3sNmcftPOEdWfvcORtUZz2') {
+          setIsAdmin(true);
+        } else {
+          // Fallback to checking custom claims for other potential admins
+          try {
+            const tokenResult = await currentUser.getIdTokenResult(true);
+            const hasAdminClaim = !!tokenResult.claims.admin;
+            setIsAdmin(hasAdminClaim);
+          } catch (error) {
+            console.error("Error refreshing user token:", error);
+            setIsAdmin(false); // Default to not admin on error
+          }
         }
       } else {
         // No user, not an admin
