@@ -1,11 +1,10 @@
 'use client';
 
-import { PropsWithChildren, useEffect, useCallback } from 'react';
+import { PropsWithChildren, useEffect, useCallback, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
 import { app } from '@/firebase/firebase';
 import { Skeleton } from '../ui/skeleton';
-import { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -27,15 +26,18 @@ export default function AuthProvider({ children }: PropsWithChildren) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const checkAdminClaim = useCallback(async (user: User, forceRefresh: boolean = false) => {
+  const checkAdminClaim = useCallback(async (currentUser: User, forceRefresh: boolean = false) => {
     try {
-      const tokenResult = await user.getIdTokenResult(forceRefresh);
+      const tokenResult = await currentUser.getIdTokenResult(forceRefresh);
       const claims = tokenResult.claims;
       console.log('User claims:', claims);
-      setIsAdmin(!!claims.admin);
+      const hasAdminClaim = !!claims.admin;
+      setIsAdmin(hasAdminClaim);
+      return hasAdminClaim;
     } catch (error) {
       console.error("Error getting user token:", error);
       setIsAdmin(false);
+      return false;
     }
   }, []);
 
@@ -66,13 +68,32 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     }
   }, [user, isLoading, pathname, router]);
 
-  const handleRetry = useCallback(async () => {
-    if (user) {
-      setIsLoading(true);
-      await checkAdminClaim(user, true); // Force refresh token
-      setIsLoading(false);
+
+  // This effect handles the "Access Denied" case specifically.
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | undefined;
+
+    // If we're on a private route, the user is logged in, but not yet detected as an admin
+    if (!isLoading && user && isAdmin === false && !publicRoutes.includes(pathname)) {
+        // We'll retry fetching the token every 3 seconds to check for the claim.
+        intervalId = setInterval(async () => {
+            console.log('Retrying admin check...');
+            const hasClaim = await checkAdminClaim(user, true); // Force refresh
+            if (hasClaim) {
+                // If the claim is found, clear the interval. The user will be let in on the next re-render.
+                clearInterval(intervalId);
+            }
+        }, 3000);
     }
-  }, [user, checkAdminClaim]);
+    
+    // Cleanup function to clear the interval when the component unmounts or dependencies change.
+    return () => {
+        if (intervalId) {
+            clearInterval(intervalId);
+        }
+    };
+  }, [isLoading, user, isAdmin, pathname, checkAdminClaim]);
+
 
   if (isLoading || (!user && !publicRoutes.includes(pathname))) {
     return (
@@ -105,12 +126,11 @@ export default function AuthProvider({ children }: PropsWithChildren) {
            </CardHeader>
            <CardContent>
             <p className="text-sm text-muted-foreground">
-              Please contact your system administrator to request access. If you have just been granted access, please wait a moment and try again.
+              Please contact your system administrator to request access. If you were just granted access, this screen will update automatically.
             </p>
            </CardContent>
-           <CardFooter className="flex-col sm:flex-row gap-2">
-             <Button onClick={handleRetry} className="w-full sm:w-auto">Retry</Button>
-             <Button onClick={() => auth.signOut()} className="w-full sm:w-auto" variant="outline">Logout</Button>
+           <CardFooter>
+             <Button onClick={() => auth.signOut()} className="w-full" variant="outline">Logout</Button>
            </CardFooter>
          </Card>
        </div>
