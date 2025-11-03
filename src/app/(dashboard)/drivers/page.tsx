@@ -1,3 +1,5 @@
+'use client';
+
 import { MoreHorizontal } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -25,14 +27,18 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { drivers } from '@/lib/data';
+import { useCollection } from '@/firebase';
+import type { Driver } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DriversPage() {
-  const allDrivers = drivers;
-  const pendingDrivers = drivers.filter(d => d.status === 'Pending');
+  const { data: drivers, isLoading } = useCollection<Driver>('drivers');
+
+  const allDrivers = drivers || [];
+  const pendingDrivers = allDrivers.filter(d => d.status === 'Pending');
 
   const getStatusBadgeVariant = (
-    status: (typeof drivers)[0]['status']
+    status: Driver['status']
   ): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {
       case 'Approved':
@@ -47,7 +53,7 @@ export default function DriversPage() {
   };
 
   const getAvailabilityBadgeVariant = (
-    availability: (typeof drivers)[0]['availability']
+    availability: Driver['availability']
   ) => {
     switch (availability) {
       case 'Online':
@@ -59,70 +65,92 @@ export default function DriversPage() {
     }
   }
 
-  const DriverTable = ({ driverList }: { driverList: typeof drivers }) => (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="hidden w-[100px] sm:table-cell">
-            Avatar
-          </TableHead>
-          <TableHead>Name</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Availability</TableHead>
-          <TableHead className="hidden md:table-cell">Vehicle</TableHead>
-          <TableHead>
-            <span className="sr-only">Actions</span>
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {driverList.map((driver) => (
-          <TableRow key={driver.id}>
-            <TableCell className="hidden sm:table-cell">
-              <Avatar>
-                <AvatarImage src={driver.avatarUrl} alt={driver.name} data-ai-hint={driver.dataAiHint} />
-                <AvatarFallback>{driver.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-            </TableCell>
-            <TableCell className="font-medium">{driver.name}</TableCell>
-            <TableCell>
-              <Badge variant={getStatusBadgeVariant(driver.status)}>
-                {driver.status}
-              </Badge>
-            </TableCell>
-            <TableCell>
-              <Badge variant="outline" className={getAvailabilityBadgeVariant(driver.availability)}>{driver.availability}</Badge>
-            </TableCell>
-            <TableCell className="hidden md:table-cell">
-              {driver.vehicle}
-            </TableCell>
-            <TableCell>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button aria-haspopup="true" size="icon" variant="ghost">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                  {driver.status === 'Pending' && (
-                    <>
-                      <DropdownMenuItem>Approve</DropdownMenuItem>
-                      <DropdownMenuItem className='text-destructive'>Reject</DropdownMenuItem>
-                      <DropdownMenuItem>View Application</DropdownMenuItem>
-                    </>
-                  )}
-                  {driver.status !== 'Pending' && (
-                     <DropdownMenuItem>View Details</DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </TableCell>
+  const DriverTable = ({ driverList }: { driverList: Driver[] }) => {
+     if (isLoading) {
+      return (
+        <div className="space-y-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center space-x-4">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="h-4 w-[200px]" />
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    
+    if (!driverList.length) {
+      return <p className='text-muted-foreground'>No drivers found.</p>
+    }
+
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="hidden w-[100px] sm:table-cell">
+              Avatar
+            </TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Availability</TableHead>
+            <TableHead className="hidden md:table-cell">Vehicle</TableHead>
+            <TableHead>
+              <span className="sr-only">Actions</span>
+            </TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
+        </TableHeader>
+        <TableBody>
+          {driverList.map((driver) => (
+            <TableRow key={driver.id}>
+              <TableCell className="hidden sm:table-cell">
+                <Avatar>
+                  <AvatarImage src={driver.avatarUrl} alt={driver.name} data-ai-hint={driver.dataAiHint} />
+                  <AvatarFallback>{driver.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+              </TableCell>
+              <TableCell className="font-medium">{driver.name}</TableCell>
+              <TableCell>
+                <Badge variant={getStatusBadgeVariant(driver.status)}>
+                  {driver.status}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <Badge variant="outline" className={getAvailabilityBadgeVariant(driver.availability)}>{driver.availability}</Badge>
+              </TableCell>
+              <TableCell className="hidden md:table-cell">
+                {driver.vehicle}
+              </TableCell>
+              <TableCell>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button aria-haspopup="true" size="icon" variant="ghost">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    {driver.status === 'Pending' && (
+                      <>
+                        <DropdownMenuItem>Approve</DropdownMenuItem>
+                        <DropdownMenuItem className='text-destructive'>Reject</DropdownMenuItem>
+                        <DropdownMenuItem>View Application</DropdownMenuItem>
+                      </>
+                    )}
+                    {driver.status !== 'Pending' && (
+                       <DropdownMenuItem>View Details</DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    )
+  };
 
   return (
     <Tabs defaultValue="all">

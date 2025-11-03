@@ -1,0 +1,56 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the Deliverzler platform.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the user." },
+        "name": { "type": "string", "description": "The user's full name." },
+        "email": { "type": "string", "format": "email", "description": "The user's email address." },
+        "avatarUrl": { "type": "string", "format": "uri", "description": "URL for the user's avatar image." },
+        "dataAiHint": { "type": "string", "description": "AI hint for image generation." },
+        "dateJoined": { "type": "string", "format": "date-time", "description": "The date the user joined." },
+        "lastOrder": { "type": "string", "format": "date-time", "description": "The date of the user's last order." },
+        "status": { "type": "string", "enum": ["Active", "Blocked"], "description": "The user's account status." },
+        "address": { "type": "string", "description": "The user's primary address." },
+        "favorites": { "type": "number", "description": "Number of favorite items." },
+        "promoCodes": { "type": "number", "description": "Number of promo codes used." },
+        "supportTickets": { "type": "number", "description": "Number of support tickets submitted." },
+        "activitySummary": { "type": "string", "description": "A summary of the user's activity." }
+      },
+      "required": ["id", "name", "email", "status"]
+    },
+    "Driver": {
+      "title": "Driver",
+      "description": "A driver for the Deliverzler platform.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the driver." },
+        "name": { "type": "string", "description": "The driver's full name." },
+        "email": { "type": "string", "format": "email", "description": "The driver's email address." },
+        "avatarUrl": { "type": "string", "format": "uri", "description": "URL for the driver's avatar image." },
+        "dataAiHint": { "type": "string", "description": "AI hint for image generation." },
+        "phone": { "type": "string", "description": "The driver's phone number." },
+        "vehicle": { "type": "string", "description": "The driver's vehicle information." },
+        "dateJoined": { "type": "string", "format": "date-time", "description": "The date the driver joined." },
+        "status": { "type": "string", "enum": ["Approved", "Pending", "Rejected"], "description": "The driver's application status." },
+        "availability": { "type": "string", "enum": ["Online", "Offline", "Busy"], "description": "The driver's current availability." }
+      },
+      "required": ["id", "name", "email", "status", "availability"]
+    }
+  },
+  "auth": {
+    "providers": ["email"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores user profile information."
+    },
+    "/drivers/{driverId}": {
+      "schema": { "$ref": "#/entities/Driver" },
+      "description": "Stores driver profile and application information."
+    }
+  }
+}

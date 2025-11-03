@@ -37,14 +37,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { users } from '@/lib/data';
 import type { User } from '@/lib/types';
 import { moderateUserBehavior } from '@/ai/flows/moderate-user-behavior';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useCollection } from '@/firebase';
 
 export default function UsersPage() {
+  const { data: users, isLoading } = useCollection<User>('users');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isModerationOpen, setIsModerationOpen] = useState(false);
   const [moderationResult, setModerationResult] = useState<{
@@ -87,6 +88,32 @@ export default function UsersPage() {
     });
     setIsModerationOpen(false);
   };
+  
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-headline">Users</CardTitle>
+          <CardDescription>
+            View and manage all registered users.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+           <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center space-x-4">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-[250px]" />
+                  <Skeleton className="h-4 w-[200px]" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <>
@@ -113,7 +140,7 @@ export default function UsersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => (
+              {users?.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell className="hidden sm:table-cell">
                     <Avatar>

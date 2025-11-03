@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shield } from 'lucide-react';
-import { getAuth, signInWithEmailAndPassword, type Auth } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useAuth } from '@/firebase';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -16,20 +17,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { app } from '@/firebase/firebase';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('admin@deliverzler.com');
   const [password, setPassword] = useState('admin_123');
   const [isLoading, setIsLoading] = useState(false);
-  const [auth, setAuth] = useState<Auth | null>(null);
+  const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-
-  useEffect(() => {
-    setAuth(getAuth(app));
-  }, []);
-
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
