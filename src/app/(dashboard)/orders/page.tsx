@@ -126,7 +126,7 @@ export default function OrdersPage() {
                   {order.date ? format(toDate(order.date)!, 'PPpp') : 'N/A'}
                 </TableCell>
                 <TableCell className="text-right">
-                  ${order.total.toFixed(2)}
+                  ${(order.total ?? 0).toFixed(2)}
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
