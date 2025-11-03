@@ -1,3 +1,6 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import RecentOrders from '@/components/dashboard/RecentOrders';
 import SalesChart from '@/components/dashboard/SalesChart';
 import {
@@ -10,6 +13,13 @@ import {
 import { DollarSign, ShoppingCart, Truck, Users } from 'lucide-react';
 
 export default function DashboardPage() {
+  const [newOrdersCount, setNewOrdersCount] = useState(0);
+
+  useEffect(() => {
+    // Generate random number only on the client side
+    setNewOrdersCount(Math.floor(Math.random() * 10) + 1);
+  }, []);
+
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -79,7 +89,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="font-headline">Recent Orders</CardTitle>
             <CardDescription>
-              You have {Math.floor(Math.random() * 10) + 1} new orders today.
+              You have {newOrdersCount} new orders today.
             </CardDescription>
           </CardHeader>
           <CardContent>
