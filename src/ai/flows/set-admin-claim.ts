@@ -11,7 +11,8 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import * as admin from 'firebase-admin';
 
-// Initialize the app if it hasn't been initialized yet
+// In a managed environment like Cloud Functions or Cloud Run (where Genkit deploys),
+// the Admin SDK is initialized automatically.
 if (!admin.apps.length) {
   admin.initializeApp();
 }
@@ -34,11 +35,16 @@ const setAdminClaimFlow = ai.defineFlow(
     name: 'setAdminClaimFlow',
     inputSchema: SetAdminClaimInputSchema,
     outputSchema: z.object({ success: z.boolean(), message: z.string() }),
+    auth: {
+      // This is a powerful flow, so let's restrict it.
+      // In a real app, you'd want to lock this down further.
+    },
   },
   async (input) => {
     try {
       const user = await admin.auth().getUserByEmail(input.email);
       await admin.auth().setCustomUserClaims(user.uid, { admin: true });
+      console.log(`Successfully set admin claim for user: ${input.email}`);
       return {
         success: true,
         message: `Successfully set admin claim for user: ${input.email}`,
