@@ -145,7 +145,7 @@ export default function CategoriesPage() {
               {categories?.map((category) => (
                 <TableRow key={category.id}>
                   <TableCell className="hidden sm:table-cell">
-                    {category.imageUrl && (
+                    {category.imageUrl && category.imageUrl !== '' && (
                         <Image
                         alt={category.name}
                         className="aspect-square rounded-md object-cover"

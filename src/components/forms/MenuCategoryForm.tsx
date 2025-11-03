@@ -20,6 +20,7 @@ import type { MenuCategory } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { addMenuCategory, updateMenuCategory } from '@/lib/actions';
 import { Loader2 } from 'lucide-react';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -49,8 +50,8 @@ export default function MenuCategoryForm({ category, onSuccess }: MenuCategoryFo
     : {
         name: '',
         description: '',
-        imageUrl: 'https://picsum.photos/seed/3/600/400',
-        dataAiHint: 'food category',
+        imageUrl: PlaceHolderImages.find(p => p.id === 'menu-item-3')?.imageUrl ?? 'https://picsum.photos/seed/3/600/400',
+        dataAiHint: PlaceHolderImages.find(p => p.id === 'menu-item-3')?.imageHint ?? 'food category',
       };
 
   const form = useForm<MenuCategoryFormValues>({
