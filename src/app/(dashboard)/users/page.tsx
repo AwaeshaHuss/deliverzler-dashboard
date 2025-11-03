@@ -91,11 +91,7 @@ export default function UsersPage() {
         description: `${selectedUser.name} has been blocked.`,
       });
     } catch (error) {
-       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to block user.',
-      });
+       // Error is handled by the global listener
     } finally {
       setIsModerationOpen(false);
     }

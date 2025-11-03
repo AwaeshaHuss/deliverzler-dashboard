@@ -54,11 +54,7 @@ export default function ReviewsPage() {
         description: 'The selected review has been hidden.',
       });
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to hide review.',
-      });
+      // The global error handler will catch and display the error
     }
   };
 

@@ -44,19 +44,12 @@ export default function DriversPage() {
     driverId: string,
     status: 'Approved' | 'Rejected'
   ) => {
-    try {
-      await updateDriverStatus(driverId, status);
-      toast({
-        title: 'Driver Status Updated',
-        description: `Driver has been ${status.toLowerCase()}.`,
-      });
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to update driver status.',
-      });
-    }
+    // No try-catch needed, error is handled by the global error listener
+    await updateDriverStatus(driverId, status);
+    toast({
+      title: 'Driver Status Updated',
+      description: `Driver has been ${status.toLowerCase()}.`,
+    });
   };
 
   const getStatusBadgeVariant = (
