@@ -35,25 +35,25 @@ export default function RecentOrders() {
           <div key={order.id} className="flex items-center gap-4">
             <Avatar className="hidden h-9 w-9 sm:flex">
               <AvatarImage
-                src={order.customer.avatarUrl}
+                src={order.customer?.avatarUrl}
                 alt="Avatar"
-                data-ai-hint={order.customer.dataAiHint}
+                data-ai-hint={order.customer?.dataAiHint}
               />
               <AvatarFallback>
-                {order.customer.name.charAt(0)}
+                {order.customer?.name.charAt(0)}
               </AvatarFallback>
             </Avatar>
             <div className="grid gap-1 flex-1">
               <p className="text-sm font-medium leading-none">
-                {order.customer.name}
+                {order.customer?.name ?? 'N/A'}
               </p>
               <p className="text-sm text-muted-foreground">
-                {order.customer.name.toLowerCase().replace(' ', '.')}
+                {order.customer?.name.toLowerCase().replace(' ', '.')}
                 @example.com
               </p>
             </div>
             <div className="ml-auto font-medium">
-              +${order.total.toFixed(2)}
+              +${(order.total ?? 0).toFixed(2)}
             </div>
           </div>
         ))}
