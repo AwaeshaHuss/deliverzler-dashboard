@@ -34,8 +34,8 @@ const formSchema = z.object({
   email: z.string().email('Must be a valid email.'),
   status: z.enum(['Active', 'Blocked']),
   avatarUrl: z.string().url('Must be a valid URL.'),
-  dataAiHint: z.string().optional(),
-  activitySummary: z.string().optional(),
+  dataAiHint: z.string(),
+  activitySummary: z.string(),
 });
 
 type UserFormValues = z.infer<typeof formSchema>;

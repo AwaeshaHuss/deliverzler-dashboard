@@ -4,7 +4,6 @@ import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { Analytics } from '@vercel/analytics/react';
-import ErrorBoundary from '@/components/ErrorBoundary';
 
 export const metadata: Metadata = {
   title: 'Deliverzler Admin',
@@ -42,9 +41,7 @@ export default function RootLayout({
         className={cn('font-body antialiased')}
         suppressHydrationWarning={true}
       >
-        <ErrorBoundary>
-          <FirebaseClientProvider>{children}</FirebaseClientProvider>
-        </ErrorBoundary>
+        <FirebaseClientProvider>{children}</FirebaseClientProvider>
         <Toaster />
         <Analytics />
       </body>

@@ -33,7 +33,7 @@ export function useDoc<T extends DocumentData>(docPath: string) {
       docRef,
       (snapshot) => {
         if (snapshot.exists()) {
-          const data = { id: snapshot.id, ...snapshot.data() } as T;
+          const data = { id: snapshot.id, ...snapshot.data() } as unknown as T;
           setState({ data, isLoading: false, error: null });
         } else {
           setState({ data: null, isLoading: false, error: new Error('Document does not exist') });

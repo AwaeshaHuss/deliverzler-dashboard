@@ -35,7 +35,7 @@ const formSchema = z.object({
   status: z.enum(['Approved', 'Pending', 'Rejected']),
   availability: z.enum(['Online', 'Offline', 'Busy']),
   avatarUrl: z.string().url('Must be a valid URL.'),
-  dataAiHint: z.string().optional(),
+  dataAiHint: z.string(),
 });
 
 type DriverFormValues = z.infer<typeof formSchema>;

@@ -35,10 +35,6 @@ const setAdminClaimFlow = ai.defineFlow(
     name: 'setAdminClaimFlow',
     inputSchema: SetAdminClaimInputSchema,
     outputSchema: z.object({ success: z.boolean(), message: z.string() }),
-    auth: {
-      // This is a powerful flow, so let's restrict it.
-      // In a real app, you'd want to lock this down further.
-    },
   },
   async (input) => {
     try {

@@ -59,8 +59,9 @@ export default function UsersPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isModerationOpen, setIsModerationOpen] = useState(false);
   const [moderationResult, setModerationResult] = useState<{
-    blockUser: boolean;
-    reason: string;
+    isHarmful: boolean;
+    reason?: string;
+    action?: 'warn' | 'flag' | 'block';
   } | null>(null);
   const [isModerating, setIsModerating] = useState(false);
   const [isSheetOpen, setSheetOpen] = useState(false);
@@ -104,9 +105,7 @@ export default function UsersPage() {
     if (!selectedUser?.activitySummary) return;
     setIsModerating(true);
     try {
-      const result = await moderateUserBehavior({
-        userActivitySummary: selectedUser.activitySummary,
-      });
+      const result = await moderateUserBehavior(selectedUser.activitySummary);
       setModerationResult(result);
     } catch (error) {
       toast({
@@ -296,7 +295,7 @@ export default function UsersPage() {
               moderationResult && (
                 <div
                   className={`p-3 rounded-md border ${
-                    moderationResult.blockUser
+                    moderationResult.isHarmful
                       ? 'border-destructive/50 bg-destructive/10'
                       : 'border-green-500/50 bg-green-500/10'
                   }`}
@@ -304,7 +303,7 @@ export default function UsersPage() {
                   <p className="font-medium">AI Recommendation:</p>
                   <p
                     className={
-                      moderationResult.blockUser
+                      moderationResult.isHarmful
                         ? 'text-destructive'
                         : 'text-green-700'
                     }
@@ -325,7 +324,7 @@ export default function UsersPage() {
                 Check Behavior
               </Button>
             )}
-            {moderationResult?.blockUser && (
+            {moderationResult?.isHarmful && (
               <AlertDialogAction asChild>
                 <Button variant="destructive" onClick={handleBlockUser}>
                   Block User
